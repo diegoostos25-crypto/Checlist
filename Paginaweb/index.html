@@ -1,0 +1,938 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GrupoAmigo IT · Gestión de Accesos</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --p:    #B5179E;
+  --pd:   #7209B7;
+  --pl:   #F72585;
+  --bl:   #3A0CA3;
+  --blm:  #4361EE;
+  --white:#FFFFFF;
+  --bg:   #FAF8FF;
+  --card: #FFFFFF;
+  --text: #1E1B4B;
+  --textm:#4B5563;
+  --border:#E5E7EB;
+  --green:#059669; --green-bg:#D1FAE5;
+  --orange:#D97706;--orange-bg:#FEF3C7;
+  --red:  #DC2626; --red-bg:  #FEE2E2;
+  --gray: #9CA3AF; --gray-bg: #F3F4F6;
+  --sw:250px;
+  --r:12px;
+  --sh:0 2px 8px rgba(0,0,0,0.08);
+  --shl:0 8px 30px rgba(181,23,158,0.15);
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--text);display:flex;min-height:100vh;font-size:14px;}
+input,select,textarea{font-family:'Outfit',sans-serif;}
+details>summary{list-style:none;} details>summary::-webkit-details-marker{display:none;}
+
+/* ── SIDEBAR ── */
+.sidebar{width:var(--sw);background:linear-gradient(175deg,#C2185B 0%,#7B1FA2 40%,#4A148C 70%,#311B92 100%);position:fixed;top:0;left:0;height:100vh;display:flex;flex-direction:column;z-index:100;box-shadow:4px 0 24px rgba(49,27,146,0.35);}
+.logo-area{padding:26px 20px 18px;border-bottom:1px solid rgba(255,255,255,0.15);}
+.logo-brand{font-size:28px;font-weight:800;color:white;letter-spacing:-1.5px;line-height:1;}
+.logo-brand span{color:#F48FB1;}
+.logo-dept{font-size:9.5px;font-weight:500;color:rgba(255,255,255,0.5);letter-spacing:2.5px;text-transform:uppercase;margin-top:5px;}
+.nav{padding:14px 10px;flex:1;display:flex;flex-direction:column;gap:3px;overflow-y:auto;}
+.nav-item{display:flex;align-items:center;gap:11px;padding:10px 13px;color:rgba(255,255,255,0.6);cursor:pointer;border-radius:10px;transition:all .2s;font-size:13px;font-weight:500;position:relative;user-select:none;}
+.nav-item:hover{background:rgba(255,255,255,0.1);color:white;}
+.nav-item.active{background:rgba(255,255,255,0.18);color:white;font-weight:700;}
+.nav-item.active::before{content:'';position:absolute;left:0;top:50%;transform:translateY(-50%);width:3px;height:55%;background:#F48FB1;border-radius:0 3px 3px 0;}
+.nav-icon{font-size:15px;width:20px;text-align:center;flex-shrink:0;}
+.nav-label{flex:1;line-height:1.25;}
+.sidebar-footer{padding:14px 18px;border-top:1px solid rgba(255,255,255,0.12);font-size:10px;color:rgba(255,255,255,0.35);text-align:center;}
+
+/* ── MAIN ── */
+.main{margin-left:var(--sw);flex:1;display:flex;flex-direction:column;min-height:100vh;}
+.topbar{background:white;border-bottom:1px solid var(--border);padding:13px 30px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;box-shadow:0 1px 6px rgba(0,0,0,0.05);}
+.topbar-title{font-size:17px;font-weight:800;color:var(--text);}
+.topbar-title span{color:var(--p);}
+.topbar-meta{font-size:11.5px;color:var(--gray);}
+.content{padding:26px 30px;flex:1;}
+.tab-pane{display:none;animation:fadeIn .25s ease;}
+.tab-pane.active{display:block;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+
+/* ── PAGE HEADER ── */
+.pg-hdr{margin-bottom:22px;}
+.pg-hdr h1{font-size:22px;font-weight:800;color:var(--text);margin-bottom:3px;}
+.pg-hdr p{color:var(--textm);font-size:13.5px;}
+
+/* ── CARDS & GRIDS ── */
+.card{background:var(--card);border-radius:var(--r);padding:20px;box-shadow:var(--sh);border:1px solid var(--border);}
+.card-hdr{display:flex;align-items:center;gap:9px;margin-bottom:14px;padding-bottom:12px;border-bottom:1px solid var(--border);}
+.card-hdr h2{font-size:14px;font-weight:700;}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+.g3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;}
+.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;}
+
+/* ── STAT CARDS ── */
+.stat-card{background:white;border-radius:var(--r);padding:18px;border:1px solid var(--border);box-shadow:var(--sh);display:flex;align-items:center;gap:14px;}
+.stat-icon{width:46px;height:46px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;}
+.stat-val{font-size:26px;font-weight:800;line-height:1;}
+.stat-lbl{font-size:11.5px;color:var(--textm);margin-top:2px;}
+
+/* ── BADGES ── */
+.badge{display:inline-flex;align-items:center;padding:2px 9px;border-radius:20px;font-size:11px;font-weight:600;}
+.b-green{background:var(--green-bg);color:var(--green);}
+.b-orange{background:var(--orange-bg);color:var(--orange);}
+.b-gray{background:var(--gray-bg);color:var(--gray);}
+.b-purple{background:#EDE9FE;color:#7C3AED;}
+.b-pink{background:#FCE7F3;color:var(--p);}
+.b-red{background:var(--red-bg);color:var(--red);}
+
+/* ── TABLES ── */
+.tbl-wrap{overflow-x:auto;border-radius:var(--r);border:1px solid var(--border);}
+table{width:100%;border-collapse:collapse;font-size:13px;}
+thead th{background:linear-gradient(135deg,var(--p),var(--pd));color:white;font-weight:600;padding:11px 14px;text-align:left;white-space:nowrap;}
+tbody tr:nth-child(even) td{background:#FAF8FF;}
+tbody tr:hover td{background:#F0EBFF;}
+tbody td{padding:9px 14px;border-bottom:1px solid var(--border);vertical-align:middle;}
+
+/* ── NIVEL ── */
+.nA{background:#EDE9FE;color:#5B21B6;} .nB{background:#DBEAFE;color:#1E40AF;}
+.nC{background:#D1FAE5;color:#065F46;} .nD{background:#FEF3C7;color:#92400E;}
+.nE{background:#F3F4F6;color:#374151;} .nF{background:#F9FAFB;color:#6B7280;}
+
+/* ── APP CARDS ── */
+.app-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:12px;}
+.app-card{background:white;border-radius:10px;padding:14px;border:1px solid var(--border);box-shadow:var(--sh);transition:all .2s;cursor:default;}
+.app-card:hover{transform:translateY(-2px);box-shadow:var(--shl);}
+.app-card-id{font-size:10px;font-weight:700;color:var(--p);margin-bottom:3px;}
+.app-card-name{font-size:12.5px;font-weight:700;color:var(--text);margin-bottom:4px;}
+.app-card-desc{font-size:11px;color:var(--textm);line-height:1.45;margin-bottom:8px;}
+
+/* ── SEG CONTROLS ── */
+.seg-controls{display:flex;gap:10px;align-items:center;margin-bottom:18px;flex-wrap:wrap;}
+.seg-sel{padding:8px 13px;border:1px solid var(--border);border-radius:8px;font-family:'Outfit',sans-serif;font-size:13px;background:white;color:var(--text);outline:none;}
+.seg-sel:focus{border-color:var(--p);box-shadow:0 0 0 3px rgba(181,23,158,0.1);}
+.view-toggle{display:flex;border:1px solid var(--border);border-radius:8px;overflow:hidden;}
+.view-btn{padding:7px 13px;background:white;cursor:pointer;font-size:12px;font-weight:500;border:none;font-family:'Outfit',sans-serif;transition:all .15s;color:var(--textm);}
+.view-btn.active{background:var(--p);color:white;}
+
+/* ── ROLE CARD ── */
+.role-hero{background:linear-gradient(135deg,var(--p),var(--pd),var(--bl));color:white;border-radius:var(--r);padding:18px 22px;margin-bottom:18px;display:flex;align-items:center;gap:16px;box-shadow:var(--shl);}
+.rh-id{font-size:11px;opacity:.65;margin-bottom:2px;}
+.rh-name{font-size:19px;font-weight:800;}
+.rh-dept{font-size:12px;opacity:.75;margin-top:2px;}
+.rh-right{margin-left:auto;text-align:right;}
+
+/* ── ACCESS ITEMS ── */
+.access-item{padding:9px 11px;border-radius:8px;font-size:11.5px;display:flex;align-items:flex-start;gap:8px;margin-bottom:5px;}
+.ai-d1{background:var(--green-bg);border:1px solid #A7F3D0;}
+.ai-dp{background:var(--orange-bg);border:1px solid #FDE68A;}
+.ai-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;margin-top:3px;}
+.d1-dot{background:var(--green);}
+.dp-dot{background:var(--orange);}
+
+/* ── MATRIX TABLE ── */
+.mx-wrap{overflow-x:auto;border-radius:var(--r);border:1px solid var(--border);}
+.mx-tbl{border-collapse:collapse;font-size:11px;min-width:1000px;}
+.mx-tbl th{background:linear-gradient(135deg,var(--p),var(--pd));color:white;padding:8px 9px;text-align:center;font-size:9.5px;white-space:nowrap;}
+.mx-tbl th.mxrh{text-align:left;min-width:175px;padding:8px 12px;}
+.mx-tbl td{padding:6px 8px;border-bottom:1px solid var(--border);text-align:center;}
+.mx-tbl tr:nth-child(even) td{background:#FAF8FF;}
+.mx-tbl tr:hover td{background:#F0EBFF;}
+.mx-tbl .mxrd{text-align:left;padding:6px 12px;font-weight:600;font-size:11.5px;white-space:nowrap;}
+.cd1{background:var(--green-bg);color:var(--green);font-weight:700;font-size:9.5px;border-radius:4px;padding:1px 5px;display:inline-block;}
+.cdp{background:var(--orange-bg);color:var(--orange);font-weight:700;font-size:9.5px;border-radius:4px;padding:1px 5px;display:inline-block;}
+.cno{color:#D1D5DB;font-size:13px;}
+
+/* ── EMP FORM ── */
+.emp-form{background:white;border-radius:var(--r);padding:18px;border:1px solid var(--border);margin-bottom:18px;border-left:4px solid var(--p);}
+.fgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:11px;}
+.fg label{display:block;font-size:10.5px;font-weight:700;color:var(--textm);margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px;}
+.fg input,.fg select{width:100%;padding:8px 11px;border:1px solid var(--border);border-radius:8px;font-size:13px;outline:none;font-family:'Outfit',sans-serif;background:#FAFAFA;color:var(--text);}
+.fg input:focus,.fg select:focus{border-color:var(--p);background:white;box-shadow:0 0 0 3px rgba(181,23,158,0.08);}
+
+/* ── PROGRESS ── */
+.prog-wrap{background:white;border-radius:var(--r);padding:14px 18px;border:1px solid var(--border);margin-bottom:18px;display:flex;align-items:center;gap:14px;}
+.prog-lbl{font-size:12.5px;font-weight:600;white-space:nowrap;}
+.prog-track{flex:1;height:8px;background:var(--gray-bg);border-radius:4px;overflow:hidden;}
+.prog-fill{height:100%;background:linear-gradient(90deg,var(--p),var(--pl));border-radius:4px;transition:width .35s ease;}
+.prog-pct{font-size:13px;font-weight:700;color:var(--p);white-space:nowrap;min-width:38px;text-align:right;}
+.prog-count{font-size:11px;color:var(--gray);white-space:nowrap;}
+
+/* ── CHECKLIST ── */
+.cl-sec{background:white;border-radius:var(--r);margin-bottom:10px;border:1px solid var(--border);overflow:hidden;}
+.cl-hdr{padding:12px 17px;cursor:pointer;display:flex;align-items:center;gap:9px;font-weight:700;font-size:13px;user-select:none;transition:background .15s;}
+.cl-hdr-in{background:linear-gradient(135deg,#059669,#047857);color:white;}
+.cl-hdr-eg{background:linear-gradient(135deg,#DC2626,#B91C1C);color:white;}
+.cl-hdr:hover{filter:brightness(1.06);}
+.cl-caret{margin-left:auto;transition:transform .2s;font-size:11px;}
+.cl-sec.open .cl-caret{transform:rotate(180deg);}
+.cl-cnt{font-size:11px;opacity:.75;margin-left:3px;}
+.cl-body{display:none;}
+.cl-sec.open .cl-body{display:block;}
+.cl-row-hdr{display:grid;grid-template-columns:30px 1fr 85px 85px 145px 130px;gap:8px;padding:7px 17px;background:#F8F5FF;border-bottom:2px solid var(--border);font-size:10px;font-weight:700;color:var(--textm);text-transform:uppercase;letter-spacing:.5px;}
+.cl-row-hdr-eg{display:grid;grid-template-columns:30px 1fr 145px 130px;gap:8px;padding:7px 17px;background:#FFF5F5;border-bottom:2px solid var(--border);font-size:10px;font-weight:700;color:var(--textm);text-transform:uppercase;letter-spacing:.5px;}
+.cl-item{display:grid;grid-template-columns:30px 1fr 85px 85px 145px 130px;gap:8px;align-items:center;padding:9px 17px;border-bottom:1px solid var(--border);transition:background .1s;}
+.cl-item-eg{display:grid;grid-template-columns:30px 1fr 145px 130px;gap:8px;align-items:center;padding:9px 17px;border-bottom:1px solid var(--border);transition:background .1s;}
+.cl-item:last-child,.cl-item-eg:last-child{border-bottom:none;}
+.cl-item:hover,.cl-item-eg:hover{background:#FAF8FF;}
+.cl-item.done,.cl-item-eg.done{opacity:.6;}
+.cl-item.done .cl-task span,.cl-item-eg.done .cl-task span{text-decoration:line-through;color:var(--gray);}
+.cl-num{font-size:10px;font-weight:700;color:var(--gray);text-align:center;}
+.cl-task{font-size:12.5px;color:var(--text);line-height:1.4;}
+.cl-task label{cursor:pointer;display:flex;align-items:flex-start;gap:7px;}
+.cl-cb{width:16px;height:16px;cursor:pointer;accent-color:var(--p);flex-shrink:0;margin-top:1px;}
+.ri{width:100%;padding:4px 8px;border:1px solid var(--border);border-radius:6px;font-size:11px;font-family:'Outfit',sans-serif;background:#FAFAFA;outline:none;}
+.ri:focus{border-color:var(--p);}
+
+/* ── BTNS ── */
+.btn{display:inline-flex;align-items:center;gap:7px;padding:9px 18px;border-radius:9px;cursor:pointer;font-family:'Outfit',sans-serif;font-size:12.5px;font-weight:600;border:none;transition:all .2s;}
+.btn-p{background:linear-gradient(135deg,var(--p),var(--pd));color:white;}
+.btn-p:hover{opacity:.9;transform:translateY(-1px);box-shadow:var(--shl);}
+.btn-o{background:white;color:var(--p);border:1.5px solid var(--p);}
+.btn-o:hover{background:#FAF8FF;}
+.btn-d{background:linear-gradient(135deg,#EF4444,#DC2626);color:white;}
+.btn-d:hover{opacity:.9;transform:translateY(-1px);}
+.action-bar{display:flex;justify-content:flex-end;gap:9px;margin-bottom:14px;}
+
+/* ── PORTADA INFO ── */
+.ibox{background:white;border-radius:10px;padding:13px;border:1px solid var(--border);margin-bottom:9px;}
+.ibox h4{font-size:12.5px;font-weight:700;color:var(--p);margin-bottom:5px;display:flex;align-items:center;gap:5px;}
+.ibox p,.ibox li{font-size:12px;color:var(--textm);line-height:1.55;}
+.ibox ul{padding-left:14px;}
+.princ-item{padding:8px 10px;border-radius:8px;border-left-width:3px;border-left-style:solid;font-size:12.5px;color:var(--text);line-height:1.5;margin-bottom:6px;}
+
+/* ── SIGS ── */
+.sig-block{background:white;border-radius:var(--r);border:1px solid var(--border);padding:18px;margin-top:20px;}
+.sig-block h3{font-size:13px;font-weight:700;margin-bottom:14px;}
+.sig-grid{display:grid;grid-template-columns:1fr 1fr;gap:22px;}
+.sig-col-lbl{font-size:10.5px;font-weight:700;color:var(--gray);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;}
+.sig-inputs{display:flex;flex-direction:column;gap:6px;}
+.sig-line{border-bottom:1px dashed #D1D5DB;padding-bottom:18px;margin-top:6px;font-size:10px;color:var(--gray);}
+.sig-inp{padding:7px 10px;border:1px solid var(--border);border-radius:6px;font-size:12px;font-family:'Outfit',sans-serif;width:100%;outline:none;}
+.sig-inp:focus{border-color:var(--p);}
+
+/* ── PRINT ── */
+@media print{
+  .sidebar,.topbar,.action-bar,.seg-controls,.view-toggle,.btn,
+  #btn-role-view,#btn-matrix-view,details>summary{display:none!important;}
+  .main{margin-left:0!important;}
+  .content{padding:8px!important;}
+  .tab-pane{display:none!important;}
+  .tab-pane.active{display:block!important;}
+  .cl-sec{break-inside:avoid;border:1px solid #999!important;}
+  .cl-body{display:block!important;}
+  .cl-hdr-in,.cl-hdr-eg{-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+  .role-hero{-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+  thead th{-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+  body{font-size:11px;}
+  .g2{grid-template-columns:1fr 1fr!important;}
+  .fgrid{grid-template-columns:1fr 1fr 1fr!important;}
+  a{color:inherit;}
+}
+@media(max-width:900px){
+  :root{--sw:0px;}
+  .sidebar{display:none;}
+  .g4,.g3{grid-template-columns:1fr 1fr;}
+  .fgrid{grid-template-columns:1fr 1fr;}
+  .cl-item{grid-template-columns:26px 1fr 65px 65px;}
+  .cl-row-hdr{grid-template-columns:26px 1fr 65px 65px;}
+  .cl-item>:nth-child(5),.cl-item>:nth-child(6),
+  .cl-row-hdr>:nth-child(5),.cl-row-hdr>:nth-child(6){display:none;}
+}
+</style>
+</head>
+<body>
+
+<!-- ════════════════ SIDEBAR ════════════════ -->
+<nav class="sidebar">
+  <div class="logo-area">
+    <div class="logo-brand">am<span>i</span>go</div>
+    <div class="logo-dept">Inversiones GrupoAmigo C.A.</div>
+  </div>
+  <div class="nav">
+    <div class="nav-item active" onclick="goTab('portada',this)"><span class="nav-icon">📋</span><span class="nav-label">Portada</span></div>
+    <div class="nav-item" onclick="goTab('roles',this)"><span class="nav-icon">👥</span><span class="nav-label">Catálogo de Roles</span></div>
+    <div class="nav-item" onclick="goTab('apps',this)"><span class="nav-icon">🖥️</span><span class="nav-label">Inventario de Apps</span></div>
+    <div class="nav-item" onclick="goTab('seg',this)"><span class="nav-icon">🔐</span><span class="nav-label">Segregación</span></div>
+    <div class="nav-item" onclick="goTab('ingreso',this)"><span class="nav-icon">📥</span><span class="nav-label">Checklist Ingreso</span></div>
+    <div class="nav-item" onclick="goTab('egreso',this)"><span class="nav-icon">📤</span><span class="nav-label">Checklist Egreso</span></div>
+  </div>
+  <div class="sidebar-footer">Dpto. IT · v2.0 · Mayo 2026</div>
+</nav>
+
+<!-- ════════════════ MAIN ════════════════ -->
+<div class="main">
+  <div class="topbar">
+    <div class="topbar-title">Sistema de Gestión de <span>Accesos IT</span></div>
+    <div class="topbar-meta" id="topbar-date"></div>
+  </div>
+  <div class="content">
+
+    <!-- ╔══ PORTADA ══╗ -->
+    <div class="tab-pane active" id="tab-portada">
+      <div class="pg-hdr">
+        <h1>Bienvenido al Sistema de Gestión de Accesos IT</h1>
+        <p>Inversiones GrupoAmigo C.A. · Departamento de Tecnología · Versión 2.0</p>
+      </div>
+      <div class="g4" style="margin-bottom:20px;" id="stat-cards"></div>
+      <div class="g2">
+        <div>
+          <div class="card" style="margin-bottom:14px;">
+            <div class="card-hdr"><span>🎨</span><h2>Leyenda de Colores</h2></div>
+            <div style="display:flex;flex-direction:column;gap:8px;">
+              <div style="display:flex;align-items:flex-start;gap:10px;padding:9px;background:var(--green-bg);border-radius:9px;border:1px solid #A7F3D0;">
+                <span style="background:var(--green);color:white;padding:1px 9px;border-radius:4px;font-size:11px;font-weight:700;flex-shrink:0;">D1</span>
+                <div><b style="font-size:12px;">Desde el Día 1</b><br><span style="font-size:11.5px;color:#065F46;">Acceso otorgado desde el primer día. Válido durante el período de prueba Y como personal de planta.</span></div>
+              </div>
+              <div style="display:flex;align-items:flex-start;gap:10px;padding:9px;background:var(--orange-bg);border-radius:9px;border:1px solid #FDE68A;">
+                <span style="background:var(--orange);color:white;padding:1px 9px;border-radius:4px;font-size:11px;font-weight:700;flex-shrink:0;">DP</span>
+                <div><b style="font-size:12px;">Post Prueba — Solo Planta</b><br><span style="font-size:11.5px;color:#92400E;">Se activa SOLO al confirmar la incorporación definitiva, después del período de prueba de 1 mes.</span></div>
+              </div>
+              <div style="display:flex;align-items:flex-start;gap:10px;padding:9px;background:var(--gray-bg);border-radius:9px;border:1px solid #E5E7EB;">
+                <span style="background:var(--gray);color:white;padding:1px 9px;border-radius:4px;font-size:11px;font-weight:700;flex-shrink:0;">--</span>
+                <div><b style="font-size:12px;">No Aplica</b><br><span style="font-size:11.5px;color:#6B7280;">Este acceso no corresponde al cargo. No se asigna bajo ninguna circunstancia.</span></div>
+              </div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-hdr"><span>📌</span><h2>Cómo usar este sistema</h2></div>
+            <div class="ibox"><h4>👥 Catálogo de Roles</h4><p>26 cargos clasificados por nivel de acceso (A–F) y departamento, según el organigrama vigente.</p></div>
+            <div class="ibox"><h4>🖥️ Inventario de Apps</h4><p>18 aplicaciones, sistemas y activos de hardware disponibles para asignación IT, con su categoría y responsable.</p></div>
+            <div class="ibox"><h4>🔐 Segregación de Funciones</h4><p>Matriz Rol × Aplicación. Selecciona el cargo para ver exactamente qué accesos corresponden y cuándo se otorgan.</p></div>
+            <div class="ibox"><h4>📥 Checklist Ingreso</h4><p>Proceso completo de alta de personal con diferenciación de período de prueba vs. planta confirmada.</p></div>
+            <div class="ibox"><h4>📤 Checklist Egreso</h4><p>Proceso de baja. Prioridad en revocación de accesos. <b style="color:var(--red);">Ejecutar sin demora.</b></p></div>
+          </div>
+        </div>
+        <div>
+          <div class="card">
+            <div class="card-hdr"><span>⚖️</span><h2>Principios de Segregación de Funciones</h2></div>
+            <div class="princ-item" style="background:#FAF8FF;border-color:var(--p);">🔑 <b>Mínimo Privilegio:</b> cada cargo recibe ÚNICAMENTE los accesos necesarios para el desempeño de sus funciones.</div>
+            <div class="princ-item" style="background:#FAF8FF;border-color:var(--pd);">📞 <b>Operadores Call:</b> acceso a Evolution perfil Agente — <b>NO</b> pueden acceder a perfiles Supervisor o Administrador.</div>
+            <div class="princ-item" style="background:#FAF8FF;border-color:var(--bl);">👁️ <b>Supervisores Call:</b> monitoreo y reportes — <b>NO</b> tienen facultad de configurar Evolution.</div>
+            <div class="princ-item" style="background:#FAF8FF;border-color:var(--blm);">🎛️ <b>Coordinador Call:</b> único rol con acceso al perfil <b>Administrador</b> de Evolution.</div>
+            <div class="princ-item" style="background:#FAF8FF;border-color:var(--pl);">🚫 <b>Fuera del Call Center:</b> sin acceso a Evolution, sin importar el nivel jerárquico.</div>
+            <div class="princ-item" style="background:var(--orange-bg);border-color:var(--orange);">⏳ <b>Período de Prueba (1 mes):</b> solo accesos D1. Los accesos DP se otorgan al confirmar planta.</div>
+            <div class="princ-item" style="background:var(--green-bg);border-color:var(--green);">📝 <b>Trazabilidad:</b> todo acceso otorgado debe quedar en la Nota de Entrega firmada y archivada en el expediente IT.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ╔══ ROLES ══╗ -->
+    <div class="tab-pane" id="tab-roles">
+      <div class="pg-hdr"><h1>👥 Catálogo de Roles y Cargos</h1><p>26 cargos organizados por departamento y nivel de acceso IT</p></div>
+      <div style="display:flex;gap:10px;align-items:center;margin-bottom:14px;flex-wrap:wrap;">
+        <select id="rol-dept-filter" class="seg-sel" onchange="filterRoles()">
+          <option value="">Todos los departamentos</option>
+        </select>
+        <span id="roles-count" style="font-size:12px;color:var(--gray);margin-left:auto;"></span>
+      </div>
+      <div class="tbl-wrap" id="roles-tbl-wrap"></div>
+      <div class="card" style="margin-top:14px;">
+        <div class="card-hdr"><span>🎨</span><h2>Niveles de Acceso IT</h2></div>
+        <div id="nivel-leg" style="display:flex;flex-wrap:wrap;gap:8px;"></div>
+      </div>
+    </div>
+
+    <!-- ╔══ APPS ══╗ -->
+    <div class="tab-pane" id="tab-apps">
+      <div class="pg-hdr"><h1>🖥️ Inventario de Aplicaciones y Equipos</h1><p>18 herramientas, sistemas y activos de hardware gestionados por TI</p></div>
+      <div style="display:flex;gap:10px;align-items:center;margin-bottom:14px;">
+        <select id="app-cat-filter" class="seg-sel" onchange="filterApps()">
+          <option value="">Todas las categorías</option>
+        </select>
+      </div>
+      <div class="app-grid" id="apps-grid"></div>
+    </div>
+
+    <!-- ╔══ SEGREGACIÓN ══╗ -->
+    <div class="tab-pane" id="tab-seg">
+      <div class="pg-hdr"><h1>🔐 Matriz de Segregación de Funciones</h1><p>D1 = acceso desde el día 1 · DP = solo al confirmar planta</p></div>
+      <div class="seg-controls">
+        <select id="seg-rol-sel" class="seg-sel" style="min-width:270px;" onchange="renderSegView()">
+          <option value="">— Selecciona un cargo para filtrar —</option>
+        </select>
+        <div class="view-toggle">
+          <button class="view-btn active" id="vbtn-rol"    onclick="setSegV('rol')">Vista por Cargo</button>
+          <button class="view-btn"         id="vbtn-matrix" onclick="setSegV('matrix')">Matriz Completa</button>
+        </div>
+        <button class="btn btn-o" onclick="window.print()" style="font-size:11.5px;padding:7px 13px;">🖨️ Imprimir</button>
+      </div>
+      <div id="seg-rol-view"></div>
+      <div id="seg-mx-view" style="display:none;"></div>
+    </div>
+
+    <!-- ╔══ CHECKLIST INGRESO ══╗ -->
+    <div class="tab-pane" id="tab-ingreso">
+      <div class="pg-hdr"><h1>📥 Checklist de Ingreso — Alta de Personal</h1><p>Departamento de Tecnología · Gestión de Accesos IT</p></div>
+      <div class="action-bar">
+        <button class="btn btn-o" onclick="resetCL('ingreso')">🔄 Reiniciar</button>
+        <button class="btn btn-p" onclick="window.print()">🖨️ Imprimir / PDF</button>
+      </div>
+      <div class="emp-form">
+        <div style="font-size:13px;font-weight:700;color:var(--p);margin-bottom:11px;">📋 Datos del Nuevo Ingreso</div>
+        <div class="fgrid">
+          <div class="fg"><label>Nombre Completo</label><input type="text" id="in-nombre" placeholder="Apellido, Nombre"></div>
+          <div class="fg"><label>Cargo / Denominación</label><select id="in-cargo"><option value="">Seleccionar cargo...</option></select></div>
+          <div class="fg"><label>Departamento</label><input type="text" id="in-dept" readonly placeholder="Autocompletado al seleccionar cargo"></div>
+          <div class="fg"><label>Fecha de Ingreso</label><input type="date" id="in-fecha"></div>
+          <div class="fg"><label>Fin Período de Prueba</label><input type="date" id="in-prueba" readonly></div>
+          <div class="fg"><label>Responsable de TI</label><input type="text" id="in-resp" placeholder="Nombre del técnico responsable"></div>
+        </div>
+      </div>
+      <div class="prog-wrap">
+        <span class="prog-lbl">📊 Progreso del Checklist</span>
+        <div class="prog-track"><div class="prog-fill" id="prog-in" style="width:0%"></div></div>
+        <span class="prog-pct" id="prog-in-pct">0%</span>
+        <span class="prog-count" id="prog-in-cnt">0 de 0 tareas</span>
+      </div>
+      <div id="cl-in-secs"></div>
+      <div class="sig-block">
+        <h3>✍️ Firmas de Conformidad</h3>
+        <div class="sig-grid">
+          <div><div class="sig-col-lbl">Responsable de TI</div>
+            <div class="sig-inputs">
+              <input class="sig-inp" type="text" placeholder="Cargo / Área">
+              <input class="sig-inp" type="text" placeholder="Nombre completo">
+              <div class="sig-line">Firma</div>
+              <input class="sig-inp" type="date">
+            </div>
+          </div>
+          <div><div class="sig-col-lbl">Empleado / Colaborador</div>
+            <div class="sig-inputs">
+              <input class="sig-inp" type="text" placeholder="Cargo / Área">
+              <input class="sig-inp" type="text" placeholder="Nombre completo">
+              <div class="sig-line">Firma</div>
+              <input class="sig-inp" type="date">
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ╔══ CHECKLIST EGRESO ══╗ -->
+    <div class="tab-pane" id="tab-egreso">
+      <div class="pg-hdr">
+        <h1>📤 Checklist de Egreso — Baja de Personal</h1>
+        <p style="color:var(--red);font-weight:600;">⚠️ EJECUTAR SIN DEMORA — La revocación de accesos es de prioridad máxima</p>
+      </div>
+      <div class="action-bar">
+        <button class="btn btn-o" onclick="resetCL('egreso')" style="color:var(--red);border-color:var(--red);">🔄 Reiniciar</button>
+        <button class="btn btn-d" onclick="window.print()">🖨️ Imprimir / PDF</button>
+      </div>
+      <div class="emp-form" style="border-left-color:var(--red);">
+        <div style="font-size:13px;font-weight:700;color:var(--red);margin-bottom:11px;">📋 Datos del Empleado Saliente</div>
+        <div class="fgrid">
+          <div class="fg"><label>Nombre Completo</label><input type="text" id="eg-nombre" placeholder="Apellido, Nombre"></div>
+          <div class="fg"><label>Cargo / Denominación</label><input type="text" id="eg-cargo" placeholder="Cargo del empleado"></div>
+          <div class="fg"><label>Departamento</label><input type="text" id="eg-dept" placeholder="Departamento de origen"></div>
+          <div class="fg"><label>Fecha de Egreso</label><input type="date" id="eg-fecha"></div>
+          <div class="fg"><label>Motivo de Egreso</label><select id="eg-motivo"><option value="">Seleccionar...</option><option>Renuncia voluntaria</option><option>Finalización de contrato</option><option>Término del período de prueba</option><option>Despido</option><option>Otro</option></select></div>
+          <div class="fg"><label>Responsable de TI</label><input type="text" id="eg-resp" placeholder="Nombre del técnico responsable"></div>
+        </div>
+      </div>
+      <div class="prog-wrap">
+        <span class="prog-lbl">📊 Progreso del Checklist</span>
+        <div class="prog-track"><div class="prog-fill" id="prog-eg" style="width:0%;background:linear-gradient(90deg,#EF4444,#DC2626);"></div></div>
+        <span class="prog-pct" id="prog-eg-pct" style="color:var(--red);">0%</span>
+        <span class="prog-count" id="prog-eg-cnt">0 de 0 tareas</span>
+      </div>
+      <div id="cl-eg-secs"></div>
+      <div class="sig-block">
+        <h3>✍️ Firmas de Conformidad — Proceso de Egreso</h3>
+        <div class="sig-grid">
+          <div><div class="sig-col-lbl">Responsable de TI</div>
+            <div class="sig-inputs">
+              <input class="sig-inp" type="text" placeholder="Cargo / Área">
+              <input class="sig-inp" type="text" placeholder="Nombre completo">
+              <div class="sig-line">Firma</div>
+              <input class="sig-inp" type="date">
+            </div>
+          </div>
+          <div><div class="sig-col-lbl">Empleado Saliente</div>
+            <div class="sig-inputs">
+              <input class="sig-inp" type="text" placeholder="Cargo / Área">
+              <input class="sig-inp" type="text" placeholder="Nombre completo">
+              <div class="sig-line">Firma</div>
+              <input class="sig-inp" type="date">
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /content -->
+</div><!-- /main -->
+
+<script>
+// ══════════════════════════════════════════════════
+// DATA
+// ══════════════════════════════════════════════════
+const ROLES=[
+  {id:"R01",cargo:"Director General / Accionista",dept:"Dirección",        nv:"A",jq:1},
+  {id:"R02",cargo:"Contador",                      dept:"Contabilidad",     nv:"B",jq:2},
+  {id:"R03",cargo:"Gerente General",               dept:"Gerencia General", nv:"B",jq:2},
+  {id:"R04",cargo:"Especialista de Mercadeo",      dept:"Mercadeo",         nv:"C",jq:3},
+  {id:"R05",cargo:"Indicadores y Calidad (I&C)",   dept:"Calidad",          nv:"C",jq:3},
+  {id:"R06",cargo:"Inf. S&T",                      dept:"Tecnología",       nv:"C",jq:3},
+  {id:"R07",cargo:"Infraestructura Seg. & Tech",   dept:"Tecnología",       nv:"C",jq:3},
+  {id:"R08",cargo:"Gerente de Administración",     dept:"Administración",   nv:"B",jq:2},
+  {id:"R09",cargo:"Coordinador Administrativo",    dept:"Administración",   nv:"C",jq:3},
+  {id:"R10",cargo:"Analista Administrativo",       dept:"Administración",   nv:"D",jq:4},
+  {id:"R11",cargo:"Especialista Comp. & SSGG",     dept:"Serv. Generales",  nv:"D",jq:4},
+  {id:"R12",cargo:"Mensajero / Mantenimiento",     dept:"Serv. Generales",  nv:"F",jq:6},
+  {id:"R13",cargo:"Supervisor AMI",                dept:"Administración",   nv:"D",jq:4},
+  {id:"R14",cargo:"Agente AMI",                    dept:"Administración",   nv:"E",jq:5},
+  {id:"R15",cargo:"Gerente de Operaciones",        dept:"Operaciones",      nv:"B",jq:2},
+  {id:"R16",cargo:"Coordinador Call Center",       dept:"Call Center",      nv:"C",jq:3},
+  {id:"R17",cargo:"Supervisor G1 / G2 / G3",       dept:"Call Center",      nv:"D",jq:4},
+  {id:"R18",cargo:"Operador Call Center",          dept:"Call Center",      nv:"E",jq:5},
+  {id:"R19",cargo:"Coordinador de RRHH",           dept:"Recursos Humanos", nv:"C",jq:3},
+  {id:"R20",cargo:"Analista de RRHH",              dept:"Recursos Humanos", nv:"D",jq:4},
+  {id:"R21",cargo:"Gerente de Ventas & Alianzas",  dept:"Ventas",           nv:"B",jq:2},
+  {id:"R22",cargo:"ATC - Atención al Cliente",     dept:"Ventas",           nv:"E",jq:5},
+  {id:"R23",cargo:"ATC Web",                       dept:"Ventas",           nv:"E",jq:5},
+  {id:"R24",cargo:"Gte. Cadena de Suministro",     dept:"Suministros",      nv:"B",jq:2},
+  {id:"R25",cargo:"Especialista de Procesos",      dept:"Suministros",      nv:"D",jq:4},
+  {id:"R26",cargo:"Especialista Cadena de Sum.",   dept:"Suministros",      nv:"D",jq:4},
+];
+
+const NV_INFO={
+  A:{lbl:"A — Dirección",    cl:"#5B21B6",bg:"#EDE9FE",desc:"Acceso total. Sin restricciones operativas."},
+  B:{lbl:"B — Gerencia",     cl:"#1E40AF",bg:"#DBEAFE",desc:"Acceso amplio a sistemas de gestión y decisión estratégica."},
+  C:{lbl:"C — Coordinación", cl:"#065F46",bg:"#D1FAE5",desc:"Acceso a plataformas del área + herramientas de supervisión."},
+  D:{lbl:"D — Supervisión",  cl:"#92400E",bg:"#FEF3C7",desc:"Acceso operativo supervisado. Herramientas propias del cargo."},
+  E:{lbl:"E — Operativo",    cl:"#374151",bg:"#F3F4F6",desc:"Acceso mínimo necesario para la función diaria."},
+  F:{lbl:"F — Básico",       cl:"#6B7280",bg:"#F9FAFB",desc:"Solo acceso AD y control biométrico de zonas comunes."},
+};
+
+const APPS=[
+  {id:"A01",name:"Active Directory (AD)",    desc:"Identidad lógica en la red corporativa",            cat:"Identidad"},
+  {id:"A02",name:"Correo Corporativo",        desc:"Buzón @grupoamigove.com",                           cat:"Comunicación"},
+  {id:"A03",name:"Biometría — Zonas Comunes",desc:"Acceso físico a áreas generales de trabajo",        cat:"Seg. Física"},
+  {id:"A04",name:"Biometría — Zonas Rest.",   desc:"Acceso a áreas críticas (servidores, bóvedas)",    cat:"Seg. Física"},
+  {id:"A05",name:"Carpetas Comp. (Lectura)", desc:"Lectura de unidades de red compartidas",             cat:"Red"},
+  {id:"A06",name:"Carpetas Comp. (Lec/Esc)",desc:"Acceso completo a unidades de red",                  cat:"Red"},
+  {id:"A07",name:"Evolution — Agente",        desc:"Call center: atención de llamadas (operador)",     cat:"Call Center"},
+  {id:"A08",name:"Evolution — Supervisor",    desc:"Call center: monitoreo y reportes de agentes",     cat:"Call Center"},
+  {id:"A09",name:"Evolution — Admin.",        desc:"Call center: configuración y administración plena",cat:"Call Center"},
+  {id:"A10",name:"CMS / Página Web Corp.",    desc:"Panel de administración del sitio web",            cat:"Web"},
+  {id:"A11",name:"ERP / CRM Corporativo",     desc:"Sistema de gestión empresarial (módulos x cargo)", cat:"Gestión"},
+  {id:"A12",name:"VPN Corporativa",           desc:"Acceso remoto seguro a la red interna",            cat:"Seguridad"},
+  {id:"A13",name:"SSO — Single Sign-On",      desc:"Autenticación unificada de plataformas",           cat:"Identidad"},
+  {id:"A14",name:"PC de Escritorio",          desc:"Equipo de cómputo fijo en puesto de trabajo",      cat:"Hardware"},
+  {id:"A15",name:"Laptop / Portátil",         desc:"Equipo portátil corporativo",                      cat:"Hardware"},
+  {id:"A16",name:"Teléfono / Extensión IP",   desc:"Comunicación telefónica interna y externa",        cat:"Hardware"},
+  {id:"A17",name:"Headset / Auriculares",     desc:"Equipo de audio para call center",                 cat:"Hdw. Call"},
+  {id:"A18",name:"Teléfono Móvil Corp.",      desc:"Dispositivo móvil para gerencia y roles móviles",  cat:"Hdw. Móvil"},
+];
+
+const CAT_COL={
+  "Identidad":"#7C3AED","Comunicación":"#2563EB","Seg. Física":"#D97706",
+  "Red":"#059669","Call Center":"#EA580C","Web":"#0891B2",
+  "Gestión":"#16A34A","Hardware":"#6B7280","Seguridad":"#DC2626",
+  "Hdw. Call":"#F59E0B","Hdw. Móvil":"#8B5CF6",
+};
+
+const MX={
+  R01:["D1","DP","D1","DP","DP","DP","--","--","DP","DP","DP","DP","DP","--","DP","DP","--","DP"],
+  R02:["D1","D1","D1","--","D1","DP","--","--","--","--","DP","DP","DP","--","DP","DP","--","--"],
+  R03:["D1","D1","D1","DP","DP","DP","--","--","DP","DP","DP","DP","DP","--","DP","DP","--","DP"],
+  R04:["D1","D1","D1","--","D1","DP","--","--","--","DP","DP","--","DP","--","DP","DP","--","--"],
+  R05:["D1","D1","D1","--","D1","DP","--","--","--","--","DP","--","DP","--","DP","DP","--","--"],
+  R06:["D1","D1","D1","DP","D1","DP","--","--","DP","DP","DP","DP","DP","--","DP","DP","--","--"],
+  R07:["D1","D1","D1","DP","D1","DP","--","--","DP","DP","DP","DP","DP","--","DP","DP","--","--"],
+  R08:["D1","D1","D1","DP","DP","DP","--","--","--","--","DP","DP","DP","D1","DP","DP","--","DP"],
+  R09:["D1","D1","D1","--","D1","DP","--","--","--","--","DP","--","DP","DP","--","DP","--","--"],
+  R10:["D1","D1","D1","--","D1","D1","--","--","--","--","D1","--","D1","DP","--","D1","--","--"],
+  R11:["D1","D1","D1","--","D1","D1","--","--","--","--","D1","--","D1","DP","--","--","--","--"],
+  R12:["D1","--","D1","--","--","--","--","--","--","--","--","--","--","--","--","--","--","--"],
+  R13:["D1","D1","D1","--","D1","DP","--","--","--","--","DP","--","DP","DP","--","DP","DP","--"],
+  R14:["D1","D1","D1","--","D1","D1","--","--","--","--","D1","--","D1","DP","--","--","DP","--"],
+  R15:["D1","D1","D1","--","DP","DP","--","DP","DP","--","DP","DP","DP","--","DP","DP","--","DP"],
+  R16:["D1","D1","D1","--","DP","DP","--","DP","DP","--","DP","--","DP","DP","--","DP","DP","--"],
+  R17:["D1","D1","D1","--","D1","DP","--","DP","--","--","D1","--","D1","DP","--","DP","DP","--"],
+  R18:["D1","D1","D1","--","--","--","D1","--","--","--","--","--","D1","DP","--","--","DP","--"],
+  R19:["D1","D1","D1","--","D1","DP","--","--","--","--","DP","--","DP","--","DP","DP","--","--"],
+  R20:["D1","D1","D1","--","D1","D1","--","--","--","--","D1","--","D1","--","DP","D1","--","--"],
+  R21:["D1","D1","D1","--","DP","DP","--","--","--","DP","DP","DP","DP","--","DP","DP","--","DP"],
+  R22:["D1","D1","D1","--","--","--","--","--","--","--","D1","--","D1","DP","--","D1","--","--"],
+  R23:["D1","D1","D1","--","--","--","--","--","--","D1","D1","--","D1","DP","--","--","--","--"],
+  R24:["D1","D1","D1","--","DP","DP","--","--","--","--","DP","DP","DP","--","DP","DP","--","DP"],
+  R25:["D1","D1","D1","--","D1","DP","--","--","--","--","DP","--","DP","DP","--","DP","--","--"],
+  R26:["D1","D1","D1","--","D1","DP","--","--","--","--","DP","--","DP","DP","--","DP","--","--"],
+};
+
+const IN_SECS=[
+  {title:"Sección 1 — Identidad Lógica (Directorio Activo)",tasks:[
+    {n:"1.1",d:"Creación de cuenta de usuario en el Directorio Activo (AD)",trial:true, planta:true},
+    {n:"1.2",d:"Configurar username según estándar institucional de GrupoAmigo",trial:true, planta:true},
+    {n:"1.3",d:"Ubicar cuenta en la Unidad Organizativa (OU) del departamento destino",trial:true, planta:true},
+    {n:"1.4",d:"Asignar atributos: Nombre completo, Cargo, Departamento, Nivel de permisos",trial:true, planta:true},
+    {n:"1.5",d:"Asignar grupos y permisos básicos (accesos D1 según matriz de segregación)",trial:true, planta:true},
+    {n:"1.6",d:"Ampliar grupos y permisos completos según cargo (accesos DP de la matriz)",trial:false,planta:true},
+  ]},
+  {title:"Sección 2 — Correo Corporativo",tasks:[
+    {n:"2.1",d:"Creación de buzón de correo @grupoamigove.com",trial:true, planta:true},
+    {n:"2.2",d:"Sincronizar credenciales del correo con el Directorio Activo",trial:true, planta:true},
+    {n:"2.3",d:"Configurar alias o grupos de distribución (si el cargo lo requiere)",trial:false,planta:true},
+  ]},
+  {title:"Sección 3 — Seguridad Física (Control Biométrico)",tasks:[
+    {n:"3.1",d:"Registro de huella dactilar en el sistema de control de acceso biométrico",trial:true, planta:true},
+    {n:"3.2",d:"Asignación de zonas comunes: oficinas generales y áreas de trabajo",trial:true, planta:true},
+    {n:"3.3",d:"Habilitación de zonas restringidas (solo si el cargo lo requiere — post prueba)",trial:false,planta:true},
+  ]},
+  {title:"Sección 4 — Aplicaciones del Cargo (Según Matriz de Segregación)",tasks:[
+    {n:"4.1",d:"Consultar la Matriz de Segregación e identificar apps D1 correspondientes al cargo",trial:true, planta:false},
+    {n:"4.2",d:"Activar y configurar todas las aplicaciones D1 del cargo",trial:true, planta:true},
+    {n:"4.3",d:"CALL CENTER: Activar Evolution con el perfil correcto según cargo (Agente / Supervisor / Admin)",trial:true, planta:true},
+    {n:"4.4",d:"ERP / CRM: Crear usuario con módulos restringidos según cargo (si aplica)",trial:true, planta:true},
+    {n:"4.5",d:"SSO — Single Sign-On: Configurar autenticación unificada de plataformas",trial:false,planta:true},
+    {n:"4.6",d:"Activar accesos DP: apps post período de prueba según la matriz de segregación",trial:false,planta:true},
+    {n:"4.7",d:"VPN Corporativa: Configurar acceso remoto seguro (si el cargo lo requiere)",trial:false,planta:true},
+  ]},
+  {title:"Sección 5 — Equipos y Hardware",tasks:[
+    {n:"5.1",d:"Asignar equipos según cargo: PC / Laptop / Teléfono / Headset (consultar matriz de segregación)",trial:true, planta:true},
+    {n:"5.2",d:"Registrar en inventario IT: marca, modelo y número de serie de cada equipo asignado",trial:true, planta:true},
+    {n:"5.3",d:"Instalar Sistema Operativo (Windows Pro — requerido para unión al dominio corporativo)",trial:true, planta:true},
+    {n:"5.4",d:"Unir el equipo al dominio corporativo de GrupoAmigo",trial:true, planta:true},
+    {n:"5.5",d:"Instalar software estándar corporativo en el equipo",trial:true, planta:true},
+    {n:"5.6",d:"Instalar y configurar software específico del cargo (Evolution, ERP, herramientas del área)",trial:true, planta:true},
+    {n:"5.7",d:"Configurar dispositivo móvil corporativo con parámetros institucionales (si el cargo lo requiere)",trial:false,planta:true},
+  ]},
+  {title:"Sección 6 — Formalización y Cierre",tasks:[
+    {n:"6.1",d:"Generar Nota de Entrega de Período de Prueba (equipos y accesos D1 asignados)",trial:true, planta:false},
+    {n:"6.2",d:"Recabar firma del empleado — Nota de Entrega Período de Prueba",trial:true, planta:false},
+    {n:"6.3",d:"Generar Nota de Entrega definitiva (todos los activos y accesos confirmados)",trial:false,planta:true},
+    {n:"6.4",d:"Recabar firma del empleado — Nota de Entrega Definitiva",trial:false,planta:true},
+    {n:"6.5",d:"Archivar documentación completa en el expediente IT del empleado",trial:false,planta:true},
+  ]},
+];
+
+const EG_SECS=[
+  {title:"🚨 Sección 1 — Revocación de Accesos Lógicos  |  PRIORIDAD MÁXIMA",tasks:[
+    "Deshabilitar cuenta de usuario en Directorio Activo (AD) — bloqueo inmediato",
+    "Suspender acceso al correo corporativo @grupoamigove.com",
+    "Forzar cierre de sesiones activas en todas las plataformas y dispositivos",
+    "Revocar acceso a Evolution (desactivar perfil: Agente / Supervisor / Admin según cargo)",
+    "Revocar acceso a ERP / CRM corporativo (si aplica al cargo)",
+    "Desactivar SSO — Single Sign-On del usuario",
+    "Revocar acceso VPN corporativa (si aplica al cargo)",
+  ]},
+  {title:"Sección 2 — Revocación de Acceso Físico",tasks:[
+    "Eliminar huella dactilar del sistema de control de acceso biométrico",
+    "Recuperar credencial física / tarjeta de acceso (si aplica)",
+    "Verificar y revocar acceso a zonas restringidas",
+  ]},
+  {title:"Sección 3 — Recuperación y Auditoría de Activos",tasks:[
+    "Recibir PC / Laptop — verificar estado físico, funcional y ausencia de daños",
+    "Recibir dispositivo(s) móvil(es) corporativo(s) — verificar estado",
+    "Recibir headset / auriculares (si aplica al cargo)",
+    "Recibir teléfono / extensión IP (si aplica)",
+    "Confirmar desbloqueo: eliminar cuentas personales iCloud / Google del equipo",
+    "Verificar devolución de TODOS los activos registrados en la Nota de Entrega",
+  ]},
+  {title:"Sección 4 — Gestión de Datos y Backup",tasks:[
+    "Realizar backup de la carpeta del usuario antes de cualquier borrado",
+    "Verificar y resguardar archivos corporativos relevantes del cargo",
+    "Ejecutar borrado seguro del equipo (formateo completo + reinstalación del SO)",
+    "Actualizar inventario IT: marcar equipo como disponible o en mantenimiento",
+  ]},
+  {title:"Sección 5 — Cierre Administrativo",tasks:[
+    "Generar Nota de Devolución de Activos con detalle completo de lo recibido",
+    "Recabar firma del empleado saliente en la Nota de Devolución",
+    "Archivar y cerrar el expediente IT del empleado (registro de accesos y activos)",
+    "Notificar a RRHH y Gerencia la confirmación del cierre IT completado",
+  ]},
+];
+
+// ══════════════════════════════════════════════════
+// BOOT
+// ══════════════════════════════════════════════════
+document.addEventListener('DOMContentLoaded',()=>{
+  document.getElementById('topbar-date').textContent =
+    new Date().toLocaleDateString('es-VE',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+  buildStats(); buildRoles(); buildApps();
+  buildSegSel(); renderSegView(); buildSegMatrix();
+  buildInChecklist(); buildEgChecklist(); buildInRolSel();
+});
+
+// ── TABS ──
+function goTab(id,el){
+  document.querySelectorAll('.tab-pane').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.getElementById('tab-'+id).classList.add('active');
+  el.classList.add('active');
+}
+
+// ── STATS ──
+function buildStats(){
+  const s=[
+    {ico:'👥',val:'26',lbl:'Cargos / Roles',   bg:'#EDE9FE'},
+    {ico:'🖥️',val:'18',lbl:'Herramientas IT',  bg:'#DBEAFE'},
+    {ico:'📥',val:'27',lbl:'Tareas de Ingreso', bg:'#D1FAE5'},
+    {ico:'📤',val:'23',lbl:'Tareas de Egreso',  bg:'#FEE2E2'},
+  ];
+  document.getElementById('stat-cards').innerHTML=s.map(x=>`
+    <div class="stat-card">
+      <div class="stat-icon" style="background:${x.bg}">${x.ico}</div>
+      <div><div class="stat-val">${x.val}</div><div class="stat-lbl">${x.lbl}</div></div>
+    </div>`).join('');
+}
+
+// ── ROLES ──
+function buildRoles(){
+  const depts=[...new Set(ROLES.map(r=>r.dept))].sort();
+  const sel=document.getElementById('rol-dept-filter');
+  depts.forEach(d=>{const o=document.createElement('option');o.value=d;o.textContent=d;sel.appendChild(o);});
+  renderRolesTbl(ROLES);
+  document.getElementById('nivel-leg').innerHTML=Object.entries(NV_INFO).map(([k,v])=>`
+    <div style="display:flex;align-items:center;gap:6px;padding:6px 12px;border-radius:8px;background:${v.bg};border:1px solid ${v.cl}30;">
+      <span style="font-size:11px;font-weight:700;color:${v.cl};">${v.lbl}</span>
+      <span style="font-size:11px;color:#6B7280;">— ${v.desc}</span>
+    </div>`).join('');
+}
+function renderRolesTbl(data){
+  document.getElementById('roles-count').textContent=`${data.length} cargos`;
+  document.getElementById('roles-tbl-wrap').innerHTML=`<table>
+    <thead><tr><th style="width:58px">ID</th><th>Cargo / Denominación</th><th>Departamento</th><th style="width:165px">Nivel de Acceso</th><th style="width:55px;text-align:center">Jq.</th></tr></thead>
+    <tbody>${data.map(r=>{const nv=NV_INFO[r.nv];return`<tr>
+      <td style="font-weight:700;color:#7B3F00;font-size:11px">${r.id}</td>
+      <td style="font-weight:600">${r.cargo}</td>
+      <td>${r.dept}</td>
+      <td><span class="badge n${r.nv}" style="padding:3px 10px;border-radius:20px;">${nv.lbl}</span></td>
+      <td style="text-align:center;font-weight:700;color:#9CA3AF">${r.jq}</td>
+    </tr>`;}).join('')}</tbody></table>`;
+}
+function filterRoles(){
+  const d=document.getElementById('rol-dept-filter').value;
+  renderRolesTbl(d?ROLES.filter(r=>r.dept===d):ROLES);
+}
+
+// ── APPS ──
+function buildApps(){
+  const cats=[...new Set(APPS.map(a=>a.cat))].sort();
+  const sel=document.getElementById('app-cat-filter');
+  cats.forEach(c=>{const o=document.createElement('option');o.value=c;o.textContent=c;sel.appendChild(o);});
+  renderAppsGrid(APPS);
+}
+function renderAppsGrid(data){
+  document.getElementById('apps-grid').innerHTML=data.map(a=>{
+    const col=CAT_COL[a.cat]||'#6B7280';
+    return`<div class="app-card">
+      <div class="app-card-id">${a.id}</div>
+      <div class="app-card-name">${a.name}</div>
+      <div class="app-card-desc">${a.desc}</div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-top:6px;">
+        <span style="font-size:10px;font-weight:600;padding:2px 8px;border-radius:20px;background:${col}20;color:${col};">${a.cat}</span>
+      </div>
+    </div>`;}).join('');
+}
+function filterApps(){
+  const c=document.getElementById('app-cat-filter').value;
+  renderAppsGrid(c?APPS.filter(a=>a.cat===c):APPS);
+}
+
+// ── SEGREGACIÓN ──
+let segV='rol';
+function buildSegSel(){
+  const sel=document.getElementById('seg-rol-sel');
+  ROLES.forEach(r=>{const o=document.createElement('option');o.value=r.id;o.textContent=`${r.id} — ${r.cargo} (${r.dept})`;sel.appendChild(o);});
+  sel.value='R18';
+}
+function setSegV(v){
+  segV=v;
+  document.getElementById('seg-rol-view').style.display =v==='rol'?'block':'none';
+  document.getElementById('seg-mx-view').style.display  =v==='matrix'?'block':'none';
+  document.getElementById('vbtn-rol').classList.toggle('active',v==='rol');
+  document.getElementById('vbtn-matrix').classList.toggle('active',v==='matrix');
+}
+function renderSegView(){
+  const rid=document.getElementById('seg-rol-sel').value;
+  const el=document.getElementById('seg-rol-view');
+  if(!rid){el.innerHTML=`<div style="text-align:center;padding:40px;color:#9CA3AF;font-size:14px;">Selecciona un cargo para ver sus accesos</div>`;return;}
+  const role=ROLES.find(r=>r.id===rid);
+  const mx=MX[rid];
+  const nv=NV_INFO[role.nv];
+  const d1=APPS.filter((_,i)=>mx[i]==='D1');
+  const dp=APPS.filter((_,i)=>mx[i]==='DP');
+  const na=APPS.filter((_,i)=>mx[i]==='--');
+  el.innerHTML=`
+    <div class="role-hero">
+      <div>
+        <div class="rh-id">${role.id}</div>
+        <div class="rh-name">${role.cargo}</div>
+        <div class="rh-dept">${role.dept}</div>
+      </div>
+      <div class="rh-right">
+        <span style="background:rgba(255,255,255,.18);padding:4px 12px;border-radius:20px;font-size:12px;font-weight:600;">${nv.lbl}</span>
+        <div style="font-size:11px;opacity:.7;margin-top:4px;">${d1.length} accesos D1 · ${dp.length} accesos DP</div>
+      </div>
+    </div>
+    <div class="g2" style="gap:18px;">
+      <div>
+        <h3 style="font-size:12.5px;font-weight:700;margin-bottom:9px;display:flex;align-items:center;gap:7px;">
+          <span style="background:var(--green-bg);color:var(--green);padding:1px 8px;border-radius:4px;font-size:11px;">D1</span>
+          Accesos desde el Día 1 (${d1.length})
+        </h3>
+        ${d1.length?d1.map(a=>`<div class="access-item ai-d1">
+          <div class="ai-dot d1-dot"></div>
+          <div><div style="font-size:11.5px;font-weight:700;color:#065F46;">${a.name}</div>
+          <div style="font-size:10.5px;color:var(--green);">${a.desc}</div></div>
+        </div>`).join(''):'<p style="color:var(--gray);font-size:12px;">No aplica para este cargo</p>'}
+      </div>
+      <div>
+        <h3 style="font-size:12.5px;font-weight:700;margin-bottom:9px;display:flex;align-items:center;gap:7px;">
+          <span style="background:var(--orange-bg);color:var(--orange);padding:1px 8px;border-radius:4px;font-size:11px;">DP</span>
+          Accesos Post Prueba — Planta (${dp.length})
+        </h3>
+        ${dp.length?dp.map(a=>`<div class="access-item ai-dp">
+          <div class="ai-dot dp-dot"></div>
+          <div><div style="font-size:11.5px;font-weight:700;color:#92400E;">${a.name}</div>
+          <div style="font-size:10.5px;color:var(--orange);">${a.desc}</div></div>
+        </div>`).join(''):'<p style="color:var(--gray);font-size:12px;">No aplica para este cargo</p>'}
+      </div>
+    </div>
+    <details style="margin-top:14px;">
+      <summary style="cursor:pointer;font-size:12px;color:var(--gray);padding:8px 12px;background:var(--gray-bg);border-radius:8px;display:inline-flex;align-items:center;gap:6px;">
+        ▶ Ver accesos no aplicables (${na.length})
+      </summary>
+      <div style="display:flex;flex-wrap:wrap;gap:6px;padding:10px 4px;">
+        ${na.map(a=>`<span style="font-size:11px;padding:2px 9px;border-radius:4px;background:var(--gray-bg);color:var(--gray);">${a.name}</span>`).join('')}
+      </div>
+    </details>`;
+}
+function buildSegMatrix(){
+  document.getElementById('seg-mx-view').innerHTML=`
+    <div class="mx-wrap">
+      <table class="mx-tbl">
+        <thead>
+          <tr>
+            <th class="mxrh">Cargo / Denominación</th>
+            <th style="min-width:80px;">Depto.</th>
+            ${APPS.map(a=>`<th title="${a.name} — ${a.desc}">${a.id}</th>`).join('')}
+          </tr>
+          <tr style="background:#4A0D8F;">
+            <th class="mxrh" style="font-size:9px;opacity:.6;font-weight:400;background:#4A0D8F;"></th>
+            <th style="background:#4A0D8F;"></th>
+            ${APPS.map(a=>`<th title="${a.desc}" style="font-size:8px;font-weight:400;opacity:.65;background:#4A0D8F;">${a.name.substring(0,13)}${a.name.length>13?'…':''}</th>`).join('')}
+          </tr>
+        </thead>
+        <tbody>
+          ${ROLES.map(r=>{const m=MX[r.id];return`<tr>
+            <td class="mxrd">${r.cargo}</td>
+            <td style="font-size:10px;color:var(--gray);white-space:nowrap;text-align:center;">${r.dept.substring(0,11)}</td>
+            ${m.map(v=>`<td>${v==='D1'?'<span class="cd1">D1</span>':v==='DP'?'<span class="cdp">DP</span>':'<span class="cno">—</span>'}</td>`).join('')}
+          </tr>`;}).join('')}
+        </tbody>
+      </table>
+    </div>
+    <div style="margin-top:9px;font-size:11px;color:var(--gray);display:flex;gap:16px;flex-wrap:wrap;">
+      <span><b style="color:var(--green);">D1</b> = Desde el Día 1</span>
+      <span><b style="color:var(--orange);">DP</b> = Solo al confirmar Planta</span>
+      <span><b style="color:#D1D5DB;">—</b> = No aplica</span>
+      <span style="margin-left:auto;">← Desplaza horizontalmente para ver todas las columnas →</span>
+    </div>`;
+}
+
+// ── INGRESO CHECKLIST ──
+function buildInRolSel(){
+  const sel=document.getElementById('in-cargo');
+  ROLES.forEach(r=>{const o=document.createElement('option');o.value=r.id;o.textContent=`${r.cargo} (${r.dept})`;sel.appendChild(o);});
+  sel.addEventListener('change',()=>{
+    const r=ROLES.find(x=>x.id===sel.value);
+    if(r) document.getElementById('in-dept').value=r.dept;
+  });
+  document.getElementById('in-fecha').addEventListener('change',function(){
+    const d=new Date(this.value+'T12:00:00');
+    d.setDate(d.getDate()+30);
+    document.getElementById('in-prueba').value=d.toISOString().split('T')[0];
+  });
+}
+function buildInChecklist(){
+  document.getElementById('cl-in-secs').innerHTML=IN_SECS.map((sec,si)=>`
+    <div class="cl-sec open" id="clinsec${si}">
+      <div class="cl-hdr cl-hdr-in" onclick="toggleSec('clinsec${si}')">
+        <span>✅</span><span>${sec.title}</span>
+        <span class="cl-cnt">(${sec.tasks.length} tareas)</span>
+        <span class="cl-caret">▼</span>
+      </div>
+      <div class="cl-body">
+        <div class="cl-row-hdr">
+          <span>#</span><span>Tarea / Acción</span>
+          <span style="text-align:center;">Período Prueba</span>
+          <span style="text-align:center;">Planta</span>
+          <span>Responsable</span><span>Fecha</span>
+        </div>
+        ${sec.tasks.map((t,ti)=>`
+          <div class="cl-item" id="ini${si}_${ti}">
+            <div class="cl-num">${t.n}</div>
+            <div class="cl-task"><label>
+              <input type="checkbox" class="cl-cb" onchange="onCB('ingreso',this,'ini${si}_${ti}')">
+              <span>${t.d}</span>
+            </label></div>
+            <div style="text-align:center;">${t.trial?'<span class="badge b-green">✓ Prueba</span>':'<span class="badge b-gray">—</span>'}</div>
+            <div style="text-align:center;">${t.planta?'<span class="badge b-green">✓ Planta</span>':'<span class="badge b-gray">—</span>'}</div>
+            <div><input type="text" class="ri" placeholder="IT /"></div>
+            <div><input type="date" class="ri"></div>
+          </div>`).join('')}
+      </div>
+    </div>`).join('');
+  updProg('ingreso');
+}
+
+// ── EGRESO CHECKLIST ──
+function buildEgChecklist(){
+  let num=1;
+  document.getElementById('cl-eg-secs').innerHTML=EG_SECS.map((sec,si)=>`
+    <div class="cl-sec open" id="clegsec${si}">
+      <div class="cl-hdr cl-hdr-eg" onclick="toggleSec('clegsec${si}')">
+        <span>⚠️</span><span>${sec.title}</span>
+        <span class="cl-cnt">(${sec.tasks.length} tareas)</span>
+        <span class="cl-caret">▼</span>
+      </div>
+      <div class="cl-body">
+        <div class="cl-row-hdr-eg">
+          <span>#</span><span>Tarea / Acción</span>
+          <span>Responsable</span><span>Fecha</span>
+        </div>
+        ${sec.tasks.map((t,ti)=>{const n=`${si+1}.${ti+1}`;return`
+          <div class="cl-item-eg" id="egi${si}_${ti}">
+            <div class="cl-num">${n}</div>
+            <div class="cl-task"><label>
+              <input type="checkbox" class="cl-cb" onchange="onCB('egreso',this,'egi${si}_${ti}')">
+              <span>${t}</span>
+            </label></div>
+            <div><input type="text" class="ri" placeholder="IT /"></div>
+            <div><input type="date" class="ri"></div>
+          </div>`;}).join('')}
+      </div>
+    </div>`).join('');
+  updProg('egreso');
+}
+
+// ── CHECKLIST LOGIC ──
+function toggleSec(id){document.getElementById(id).classList.toggle('open');}
+function onCB(type,cb,itemId){
+  const el=document.getElementById(itemId);
+  el.classList.toggle('done',cb.checked);
+  updProg(type);
+}
+function updProg(type){
+  const all=document.querySelectorAll(`#tab-${type} .cl-cb`);
+  const chk=document.querySelectorAll(`#tab-${type} .cl-cb:checked`);
+  const pct=all.length?Math.round((chk.length/all.length)*100):0;
+  document.getElementById(`prog-${type.substring(0,2)}`).style.width=pct+'%';
+  document.getElementById(`prog-${type.substring(0,2)}-pct`).textContent=pct+'%';
+  document.getElementById(`prog-${type.substring(0,2)}-cnt`).textContent=`${chk.length} de ${all.length} tareas`;
+}
+function resetCL(type){
+  if(!confirm(`¿Reiniciar el checklist de ${type}? Se perderán todos los datos ingresados.`))return;
+  document.querySelectorAll(`#tab-${type} .cl-cb`).forEach(cb=>cb.checked=false);
+  document.querySelectorAll(`#tab-${type} .cl-item, #tab-${type} .cl-item-eg`).forEach(el=>el.classList.remove('done'));
+  document.querySelectorAll(`#tab-${type} input[type=text], #tab-${type} input[type=date], #tab-${type} select`).forEach(i=>i.value='');
+  updProg(type);
+}
+</script>
+</body>
+</html>
